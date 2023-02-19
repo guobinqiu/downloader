@@ -126,7 +126,7 @@ func (d *Downloader) Run() {
 	}
 }
 
-func (d Downloader) split(resp *http.Response, workers int) []Part {
+func (d *Downloader) split(resp *http.Response, workers int) []Part {
 	totalSize := d.getTotalSize(resp)
 	size := totalSize / int64(workers)
 	parts := make([]Part, 0, workers)
