@@ -256,7 +256,6 @@ func (d *Downloader) mergeParts(saveDir string, parts []Part) error {
 	for _, part := range parts {
 		from, err := os.OpenFile(fmt.Sprintf("%s/%s.part%d", saveDir, part.Filename, part.Index), os.O_RDONLY, 0644)
 		if err != nil {
-			from.Close()
 			return err
 		}
 		_, e := io.Copy(to, from)
