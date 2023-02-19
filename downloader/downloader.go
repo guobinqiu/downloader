@@ -260,6 +260,7 @@ func (d *Downloader) mergeParts(saveDir string, parts []Part) error {
 		}
 		_, e := io.Copy(to, from)
 		if e != nil {
+			from.Close()
 			return e
 		}
 		from.Close()
