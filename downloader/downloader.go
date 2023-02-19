@@ -1,7 +1,6 @@
 package downloader
 
 import (
-	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -49,7 +48,7 @@ func (d *Downloader) Run() {
 		syscall.SIGTERM,
 		syscall.SIGQUIT)
 
-	ctx, cancel := context.WithCancel(context.Background())
+	interruptCh := make(chan bool, 1)
 	dataCh := make(chan Part, 1)
 	errCh := make(chan error, 1)
 
@@ -85,7 +84,7 @@ func (d *Downloader) Run() {
 	uiprogress.Start()
 
 	for _, part := range parts {
-		go d.downloadPart(ctx, dataCh, errCh, d.resourceUrl, d.saveDir, part)
+		go d.downloadPart(interruptCh, dataCh, errCh, d.resourceUrl, d.saveDir, part)
 	}
 
 	parts = nil
@@ -93,7 +92,7 @@ func (d *Downloader) Run() {
 	for {
 		select {
 		case <-quit:
-			cancel()
+			close(interruptCh)
 		case err := <-errCh:
 			log.Fatal(err)
 		case part := <-dataCh:
@@ -147,7 +146,7 @@ func (d *Downloader) split(resp *http.Response, workers int) []Part {
 	return parts
 }
 
-func (d *Downloader) downloadPart(ctx context.Context, dataCh chan Part, errCh chan error, resourceUrl, saveDir string, part Part) {
+func (d *Downloader) downloadPart(interruptCh chan bool, dataCh chan Part, errCh chan error, resourceUrl, saveDir string, part Part) {
 	partFilePath := fmt.Sprintf("%s/%s.part%d", saveDir, part.Filename, part.Index)
 	bar := uiprogress.AddBar(int(part.size())).AppendCompleted().PrependElapsed()
 	bar.PrependFunc(func(b *uiprogress.Bar) string {
@@ -188,7 +187,7 @@ func (d *Downloader) downloadPart(ctx context.Context, dataCh chan Part, errCh c
 
 	for {
 		select {
-		case <-ctx.Done():
+		case <-interruptCh:
 			dataCh <- part
 			return
 		default:
