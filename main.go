@@ -3,13 +3,15 @@ package main
 import (
 	"errors"
 	"flag"
-	"fmt"
-	"github.com/guobinqiu/downloader/downloader"
 	"log"
 	"os"
+	"os/signal"
 	"runtime"
 	"strings"
+	"syscall"
 	"time"
+
+	"github.com/guobinqiu/downloader/downloader"
 )
 
 var (
@@ -22,7 +24,7 @@ var (
 func main() {
 	start := time.Now()
 	defer func() {
-		fmt.Printf("Time last: %f seconds\n", time.Since(start).Seconds())
+		log.Printf("Time last: %f seconds\n", time.Since(start).Seconds())
 	}()
 
 	flag.StringVar(&resourceUrl, "resourceUrl", "", "Resource url to be downloaded")
@@ -32,7 +34,7 @@ func main() {
 	flag.Parse()
 
 	flag.Usage = func() {
-		fmt.Println("Usage: downloader --resourceUrl=https://storage.googleapis.com/golang/go1.6.3.darwin-amd64.pkg --saveDir=abc --workers=5 --resume=true")
+		log.Println("Usage: downloader --resourceUrl=https://storage.googleapis.com/golang/go1.6.3.darwin-amd64.pkg --saveDir=abc --workers=5 --resume=true")
 		flag.PrintDefaults()
 	}
 
@@ -45,8 +47,19 @@ func main() {
 		log.Fatal(err)
 	}
 
+	interruptCh := make(chan bool, 1)
+	dataCh := make(chan downloader.Part, 1)
+	errCh := make(chan error, 1)
+
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit,
+		syscall.SIGHUP,
+		syscall.SIGINT,
+		syscall.SIGTERM,
+		syscall.SIGQUIT)
+
 	d := downloader.NewDownloader(resourceUrl, saveDir, workers, resume)
-	d.Run()
+	d.Run(interruptCh, dataCh, errCh, quit)
 }
 
 func checkArguments(resourceUrl, saveDir string, workers int) error {

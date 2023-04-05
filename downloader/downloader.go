@@ -4,18 +4,17 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/gosuri/uiprogress"
 	"io"
 	"io/ioutil"
 	"log"
 	"mime"
 	"net/http"
 	"os"
-	"os/signal"
 	"path/filepath"
 	"sort"
 	"strconv"
-	"syscall"
+
+	"github.com/gosuri/uiprogress"
 )
 
 const (
@@ -40,18 +39,7 @@ func NewDownloader(resourceUrl string, saveDir string, workers int, resume bool)
 	}
 }
 
-func (d *Downloader) Run() {
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit,
-		syscall.SIGHUP,
-		syscall.SIGINT,
-		syscall.SIGTERM,
-		syscall.SIGQUIT)
-
-	interruptCh := make(chan bool, 1)
-	dataCh := make(chan Part, 1)
-	errCh := make(chan error, 1)
-
+func (d *Downloader) Run(interruptCh chan bool, dataCh chan Part, errCh chan error, quit chan os.Signal) {
 	resp, err := http.Head(d.resourceUrl)
 	if err != nil {
 		log.Fatal(err)
