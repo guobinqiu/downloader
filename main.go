@@ -27,10 +27,10 @@ func main() {
 		log.Printf("Time last: %f seconds\n", time.Since(start).Seconds())
 	}()
 
-	flag.StringVar(&resourceUrl, "resourceUrl", "", "Resource url to be downloaded")
-	flag.StringVar(&saveDir, "saveDir", "", "Directory for saving downloaded resources")
-	flag.IntVar(&workers, "workers", runtime.NumCPU(), "Number of concurrency")
-	flag.BoolVar(&resume, "resume", true, "Continue from last time breakpoint or not")
+	flag.StringVar(&resourceUrl, "resourceUrl", "", "Download url for a file")
+	flag.StringVar(&saveDir, "saveDir", "", "Local directory for downloaded files")
+	flag.IntVar(&workers, "workers", runtime.NumCPU(), "Number of concurrency, default to CPU nums")
+	flag.BoolVar(&resume, "resume", true, "Continue from last time breakpoint or not, default to true")
 	flag.Parse()
 
 	flag.Usage = func() {
