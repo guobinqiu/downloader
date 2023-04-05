@@ -8,7 +8,7 @@ go install github.com/guobinqiu/downloader@latest
 downloader --resourceUrl=https://storage.googleapis.com/golang/go1.6.3.darwin-amd64.pkg --saveDir=abc --workers=5 --resume=true
 ```
 
-Params
+Params:
 
 name|required|desc
 ---|---|---
