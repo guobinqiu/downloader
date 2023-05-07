@@ -1,5 +1,5 @@
-Concurrent and resumable downloader
----
+# Concurrent and resumable downloader
+
 Mine wget, implemented by Go.
 
 ```
@@ -27,3 +27,6 @@ abc/go1.6.3.darwin-amd64.pkg.part0   --- [======================>---------------
 abc/go1.6.3.darwin-amd64.pkg.part3   --- [======================>---------------------------------------------]  35%
 ```
 
+## License
+
+MIT
